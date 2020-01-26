@@ -6,6 +6,8 @@ import (
     "github.com/friendsofgo/graphiql"
     graphql "github.com/graph-gophers/graphql-go"
     "github.com/graph-gophers/graphql-go/relay"
+    "github.com/heptiolabs/healthcheck"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 // TODO: Schema
 // TODO: Model
@@ -31,8 +33,11 @@ func main() {
     if err != nil {
         panic(err)
     }
-    http.Handle("/", graphiqlHandler)
+    http.Handle("/graphiql", graphiqlHandler)
     // Run
+    health := healthcheck.NewHandler()
+    http.Handle("/", health);
+    http.Handle("/metrics", promhttp.Handler())
     log.Println("Server ready at 8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
