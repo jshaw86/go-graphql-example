@@ -10,8 +10,11 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
 
-    - name: Build
-      run: ./dockerize push
-      env: 
+    - name: Login to GitHub Docker Registry
+      run: docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+      env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build
+      run: ./dockerize push
