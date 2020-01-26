@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+NAME="graphql-example"
+TAG="${VERSION:-latest}"
+BRANCH="${BRANCH:-master}"
+REGISTRY=${REGISTRY:-jshaw86} #dockerhub default
+
+echo "Building... $NAME:$TAG"
+
+docker build -t "$NAME:$TAG" .
+
+if [ "$1" == "push" ]; then
+    echo "Pushing... $NAME:$TAG"
+    docker tag $NAME:$TAG $REGISTRY/$NAME:$TAG
+    docker push $REGISTRY/$NAME:$TAG
+fi
