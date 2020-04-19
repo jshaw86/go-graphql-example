@@ -1,12 +1,10 @@
+build:
+	go build -o graphql cmd/graphql/main.go
 
-
-build-example:
-	go build -o graphql-example cmd/graphql-example/main.go
-
-run-example:
-	go run cmd/graphql-example/main.go 
+run:
+	go run cmd/graphql/main.go 
 
 clean:
-	rm graphql-example
+	rm graphql
 
 .PHONY: clean

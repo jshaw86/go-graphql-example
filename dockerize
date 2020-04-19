@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-NAME="graphql-example"
+NAME="graphql"
 TAG="${VERSION:-latest}"
 BRANCH="${BRANCH:-master}"
 REGISTRY=${REGISTRY:-jshaw86} #dockerhub default
