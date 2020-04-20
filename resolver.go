@@ -1,96 +1,69 @@
-package gorecipe
+package graphqlexample 
 
 import (
-    "context"
-    "github.com/kofoworola/gorecipe/models"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
+    "github.com/jshaw86/go-graphql-example/models"
+    graphql "github.com/graph-gophers/graphql-go"
 )
+
+type todolistResolver struct {
+    t *models.TodoList
+}
+
+func (r *todolistResolver) ID() graphql.ID {
+	gID := graphql.ID{}
+	gID.UnmarshalGraphQL(r.t.ID)
+    return gID
+}
+
+func (r *todolistResolver) Name() string {
+    return r.t.Name
+}
+
+func (r *todolistResolver) Items() *[]*itemResolver {
+    return resolveItems(r.t.Items)
+
+}
+
+type itemResolver struct {
+    i *models.Item
+}
+
+func (r *itemResolver) ID() int {
+    return r.i.ID
+}
+
+func (r *itemResolver) Name() string {
+    return r.i.Name
+}
+
+func (r *itemResolver) DueDate() string {
+    return r.i.DueDate
+
+}
 
 type Resolver struct{
      DB *gorm.DB
 }
 
-func (r *Resolver) Mutation() MutationResolver {
-    return &mutationResolver{r}
+func (r *Resolver) GetTodoList(id struct{ ID graphql.ID }) *models.TodoList {
+	var itemArray []models.Item;
+    return &models.TodoList{ID:1, Name: "Something", Items:itemArray}
+
 }
-func (r *Resolver) Query() QueryResolver {
-    return &queryResolver{r}
-}
 
-//Resolver for mutations
-type mutationResolver struct{ *Resolver }
-
-//Create recipe mutation
-func (r *mutationResolver) CreateItem(ctx context.Context, input *NewItem, ingredients []*NewIngredient) (*models.Item, error) {
-    //Fetch Connection and close db
-    db := models.FetchConnection()
-    defer db.Close()
-
-    //Create the recipe using the input structs
-    recipe := models.Item{Name: input.Name, Procedure: *input.Procedure}
-
-    //initialize the ingredients with the length of the input for ingredients
-    recipe.Ingredients = make([]models.Ingredient,len(ingredients))
-    //Loop and add all items
-    for index,item := range ingredients{
-        recipe.Ingredients[index] = models.Ingredient{Name: item.Name}
+func resolveItems(ids []models.Item) *[]*itemResolver {
+    var items []*itemResolver
+    for _, id := range ids {
+        if i := resolveItem(id.ID); i != nil {
+            items = append(items, i)
+        }
     }
-    //Create by passing the pointer to the recipe
-    db.Create(&recipe)
-    return &recipe, nil
+    return &items
 }
 
-//Update recipe mutation
-func (r *mutationResolver) UpdateItem(ctx context.Context, id *int, input *NewItem, ingredients []*NewIngredient) (*models.Item, error) {
-    //Fetch Connection and close db
-    db := models.FetchConnection()
-    defer db.Close()
+func resolveItem(id int) *itemResolver {
+        return &itemResolver{&models.Item{}}
 
-    var recipe models.Item
-    //Find recipe based on ID and update
-    db = db.Preload("Ingredients").Where("id = ?",*id).First(&recipe).Update("name",input.Name)
-    if input.Procedure != nil{
-        db.Update("procedure",*input.Procedure)
-    }
-
-    //Update Ingredients
-    recipe.Ingredients = make([]models.Ingredient,len(ingredients))
-    for index,item := range ingredients{
-        recipe.Ingredients[index] = models.Ingredient{Name:item.Name}
-    }
-    db.Save(&recipe)
-    return &recipe,nil
-}
-
-//Delete recipe mutation
-func (r *mutationResolver) DeleteItem(ctx context.Context, id *int) ([]*models.Item, error) {
-    //Fetch connection
-    db := models.FetchConnection()
-    defer db.Close()
-    var recipe models.Item
-
-    //Fetch based on ID and delete
-    db.Where("id = ?",*id).First(&recipe).Delete(&recipe)
-
-    //Preload and fetch all recipes
-    var recipes []*models.Item
-    db.Preload("Ingredients").Find(&recipes)
-    return recipes,nil
-}
-
-
-//Query resolver
-type queryResolver struct{ *Resolver }
-
-//Get all recipes
-func (r *queryResolver) Items(ctx context.Context) ([]*models.Item, error) {
-    //Fetch a connection
-    db := models.FetchConnection()
-    //Defer closing the database
-    defer db.Close()
-    //Create an array of recipes to populate
-
-    db.Preload("Ingredients").Find(&recipes)
-    return recipes,nil
 }
