@@ -1,59 +1,39 @@
 package main
 
 import (
+    "os"
     "log"
-    "fmt"
     "net/http"
-    "context"
-    "time"
     "github.com/heptiolabs/healthcheck"
     "github.com/prometheus/client_golang/prometheus/promhttp"
-    "github.com/jinzhu/gorm"
-    _ "github.com/jinzhu/gorm/dialects/mysql"
     "github.com/jshaw86/go-graphql-example/models"
+    graphqlexample "github.com/jshaw86/go-graphql-example"
     "github.com/samsarahq/thunder/graphql"
     "github.com/samsarahq/thunder/graphql/graphiql"
     "github.com/samsarahq/thunder/graphql/introspection"
-    "github.com/samsarahq/thunder/graphql/schemabuilder"
-    "github.com/samsarahq/thunder/reactive"
+
 )
-// TODO: Schema
-// TODO: Model
-type query struct{}
-// TODO: Resolver
 
-func (_ *query) Hello() string {
-    return "Hello, world!"
-
-}
-
-var db *gorm.DB;
-
-func initDB() {
-    var err error
-    dataSourceName := "root:@tcp(localhost:3306)/?parseTime=True"
-    db, err = gorm.Open("mysql", dataSourceName)
-
-    if err != nil {
-        fmt.Println(err)
-        panic("failed to connect database")
+func getEnv(key, fallback string) string {
+    if value, ok := os.LookupEnv(key); ok {
+        return value
     }
-
-    db.LogMode(true)
-
-    // Create the database. This is a one-time step.
-    // Comment out if running multiple times - You may see an error otherwise
-    db.Exec("CREATE DATABASE test_db")
-    db.Exec("USE test_db")
-
-    // Migration to create tables for Order and Item schema
-    db.AutoMigrate(&models.List{}, &models.Item{})
+    return fallback
 }
 
 func main() {
-    initDB()
+    databaseConfig := models.Config{
+        DatabaseType: getEnv("DATABASE_TYPE", "mysql"),
+        Hostname: getEnv("HOSTNAME","localhost"),
+        Username: getEnv("USERNAME","root"),
+        Password: getEnv("PASSWORD",""),
+        Database: getEnv("DATABASE","test_db"),
 
-    schema := server.schema()
+    }
+
+    db := models.InitDB(&databaseConfig)
+    resolver := graphqlexample.Resolver{DB: db}
+    schema := resolver.Schema()
     introspection.AddIntrospectionToSchema(schema)
 
     // Run
