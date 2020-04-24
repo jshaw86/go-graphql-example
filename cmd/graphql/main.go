@@ -4,14 +4,18 @@ import (
     "log"
     "fmt"
     "net/http"
-    "github.com/friendsofgo/graphiql"
-    graphql "github.com/graph-gophers/graphql-go"
-    "github.com/graph-gophers/graphql-go/relay"
+    "context"
+    "time"
     "github.com/heptiolabs/healthcheck"
     "github.com/prometheus/client_golang/prometheus/promhttp"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
     "github.com/jshaw86/go-graphql-example/models"
+    "github.com/samsarahq/thunder/graphql"
+    "github.com/samsarahq/thunder/graphql/graphiql"
+    "github.com/samsarahq/thunder/graphql/introspection"
+    "github.com/samsarahq/thunder/graphql/schemabuilder"
+    "github.com/samsarahq/thunder/reactive"
 )
 // TODO: Schema
 // TODO: Model
@@ -47,25 +51,15 @@ func initDB() {
 }
 
 func main() {
-    s := `
-      type Query {
-        hello: String!
-      }
-    `
-
     initDB()
-    schema := graphql.MustParseSchema(s, &query{})
-    http.Handle("/graphql", &relay.Handler{Schema: schema})
-    // TODO: graphiql
-    // First argument must be same as graphql handler path
-    graphiqlHandler, err := graphiql.NewGraphiqlHandler("/query")
-    if err != nil {
-        panic(err)
-    }
-    http.Handle("/graphiql", graphiqlHandler)
+
+    schema := server.schema()
+    introspection.AddIntrospectionToSchema(schema)
+
     // Run
-    health := healthcheck.NewHandler()
-    http.Handle("/", health);
+    http.Handle("/graphql", graphql.Handler(schema))
+    http.Handle("/graphiql/", http.StripPrefix("/graphiql/", graphiql.Handler()))
+    http.Handle("/", healthcheck.NewHandler());
     http.Handle("/metrics", promhttp.Handler())
     log.Println("Server ready at 8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
