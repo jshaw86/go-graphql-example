@@ -41,6 +41,6 @@ func main() {
     http.Handle("/graphiql/", http.StripPrefix("/graphiql/", graphiql.Handler()))
     http.Handle("/", healthcheck.NewHandler());
     http.Handle("/metrics", promhttp.Handler())
-    log.Println("Server ready at 8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    log.Println("Server ready at 3030")
+    log.Fatal(http.ListenAndServe(":3030", nil))
 }

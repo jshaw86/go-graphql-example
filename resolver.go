@@ -33,18 +33,27 @@ func (r *Resolver) registerMutation(schema *schemabuilder.Schema) {
   })
 }
 
-// registerPost registers the post type.
-func (r *Resolver) registerPost(schema *schemabuilder.Schema) {
-  schema.Object("TodoList", models.TodoList{})
-  schema.Object("Item", models.Item{})
+func (r *Resolver) registerTodoList(schema *schemabuilder.Schema) {
+  object := schema.Object("TodoList", models.TodoList{})
+
+  object.FieldFunc("Items", func(args struct{ Message string}) []models.Item {
+      first := models.Item{}
+      second := models.Item{}
+      return []models.Item{first, second}
+  })
 
 }
 
+func (r *Resolver) registerItem(schema *schemabuilder.Schema) {
+  schema.Object("Item", models.Item{})
+
+}
 // schema builds the graphql schema.
 func (r *Resolver) Schema() *graphql.Schema {
   builder := schemabuilder.NewSchema()
   r.registerQuery(builder)
   r.registerMutation(builder)
-  r.registerPost(builder)
+  r.registerTodoList(builder)
+  r.registerItem(builder)
   return builder.MustBuild()
 }
