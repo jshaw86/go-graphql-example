@@ -19,7 +19,7 @@ type Config struct {
 type TodoList struct {
     ID       int    `json:"id" gorm:"primary_key"`
     Name     string `json:"name"`
-    Items []Item `json:"items"`
+    Items []*Item `gorm:"foreignkey:TodoListId"`
 }
 
 type Item struct {
@@ -57,3 +57,15 @@ func FetchConnection(c *Config) (*gorm.DB, error){
 
 }
 
+func CreateTodoList(db *gorm.DB, name string, items ...*Item) *TodoList {
+    todoList := TodoList{Name: name, Items: items}
+
+    db.NewRecord(todoList) // => returns `true` as primary key is blank
+
+    db.Create(&todoList)
+
+    db.NewRecord(todoList)
+
+    return &todoList
+
+}

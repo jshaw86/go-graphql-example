@@ -1,6 +1,7 @@
 package graphqlexample
 
 import (
+    "fmt"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
     "github.com/jshaw86/go-graphql-example/models"
@@ -12,6 +13,16 @@ type Resolver struct{
      DB *gorm.DB
 }
 
+type NewItem struct{
+    Name     string
+    DueDate  string
+}
+
+type NewTodoList struct{
+    Name string
+    Items []NewItem
+
+}
 // registerQuery registers the root query type.
 func (r *Resolver) registerQuery(schema *schemabuilder.Schema) {
   obj := schema.Query()
@@ -24,8 +35,20 @@ func (r *Resolver) registerQuery(schema *schemabuilder.Schema) {
 // registerMutation registers the root mutation type.
 func (r *Resolver) registerMutation(schema *schemabuilder.Schema) {
   obj := schema.Mutation()
-  obj.FieldFunc("createTodoList", func(args struct{ Message string }) string {
-    return "created"
+  obj.FieldFunc("createTodoList", func(todoList struct{
+      Name string
+      Items []*models.Item
+  }) *models.TodoList {
+
+      fmt.Println("todolist... %+v", todoList)
+
+      /*
+    todoListItems := make([]models.Item, len(NewTodoList.Items))
+    for i := range todoList.Items {
+        append(todoListItems, models.Item{Name:i.Name, DueDate: i.DueDate})
+    }*/
+
+    return models.CreateTodoList(r.DB, todoList.Name,todoList.Items...)
   })
 
   obj.FieldFunc("addItem", func(args struct{ Message string }) string {
@@ -36,7 +59,7 @@ func (r *Resolver) registerMutation(schema *schemabuilder.Schema) {
 func (r *Resolver) registerTodoList(schema *schemabuilder.Schema) {
   object := schema.Object("TodoList", models.TodoList{})
 
-  object.FieldFunc("Items", func(args struct{ Message string}) []models.Item {
+  object.FieldFunc("items", func(args struct{ Message string}) []models.Item {
       first := models.Item{}
       second := models.Item{}
       return []models.Item{first, second}
