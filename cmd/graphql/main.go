@@ -10,13 +10,10 @@ import (
 	"github.com/jshaw86/go-graphql-example/graph"
 	"github.com/jshaw86/go-graphql-example/graph/generated"
     "github.com/heptiolabs/healthcheck"
-    "github.com/prometheus/client_golang/prometheus/promhttp"
     "github.com/jshaw86/go-graphql-example/models"
 )
 
 const defaultPort = "8080"
-
-var db *gorm.DB;
 
 func getEnv(key, fallback string) string {
     if value, ok := os.LookupEnv(key); ok {

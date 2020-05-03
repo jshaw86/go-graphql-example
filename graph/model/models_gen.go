@@ -2,19 +2,28 @@
 
 package model
 
+type Item struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	DueDate string `json:"dueDate"`
+}
+
+type NewItem struct {
+	TodoID  string `json:"todoId"`
+	Name    string `json:"name"`
+	DueDate string `json:"dueDate"`
+}
+
 type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+	Name *string `json:"name"`
+	Text string  `json:"text"`
+	Done bool    `json:"done"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
-}
-
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type TodoList struct {
+	ID    string  `json:"id"`
+	Name  *string `json:"name"`
+	Text  string  `json:"text"`
+	Done  bool    `json:"done"`
+	Items []*Item `json:"items"`
 }

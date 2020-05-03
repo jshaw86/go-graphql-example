@@ -11,11 +11,19 @@ import (
 	"github.com/jshaw86/go-graphql-example/graph/model"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.TodoList, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+func (r *mutationResolver) AddItem(ctx context.Context, input model.NewItem) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Todos(ctx context.Context) ([]*model.TodoList, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Todo(ctx context.Context, id string) (*model.TodoList, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
