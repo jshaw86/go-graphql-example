@@ -1,0 +1,35 @@
+type TodoList {
+  id: ID!
+  name: String
+  text: String!
+  done: Boolean!
+  items: [Item]
+}
+
+type Item {
+  id: ID!
+  name: String!
+  dueDate: String!
+}
+
+type Query {
+  todos: [TodoList!]!
+  todo(id: String!): TodoList!
+}
+
+input NewTodo {
+  name: String
+  text: String!
+  done: Boolean!
+}
+
+input NewItem {
+  todoId: String!
+  name: String!
+  dueDate: String!
+}
+
+type Mutation {
+  createTodo(input: NewTodo!): TodoList!
+  addItem(input: NewItem!): Item!
+}

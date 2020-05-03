@@ -7,7 +7,7 @@ import(
 )
 
 type Config struct {
-    DatabaseType string 
+    DatabaseType string
     Hostname string
     Username string
     Password string
@@ -25,7 +25,7 @@ type Item struct {
     ID       int    `json:"id" gorm:"primary_key"`
     ListId int `json:"listId"`
     Name     string `json:"name"`
-    DueDate int    `json:"recipeId"`
+    DueDate int    `json:"dueDate"`
 }
 
 func FetchConnection(c Config) *gorm.DB{
