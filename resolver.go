@@ -1,96 +1,82 @@
-package gorecipe
+package graphqlexample
 
 import (
-    "context"
-    "github.com/kofoworola/gorecipe/models"
+    "fmt"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
+    "github.com/jshaw86/go-graphql-example/models"
+    "github.com/samsarahq/thunder/graphql"
+    "github.com/samsarahq/thunder/graphql/schemabuilder"
 )
 
 type Resolver struct{
      DB *gorm.DB
 }
 
-func (r *Resolver) Mutation() MutationResolver {
-    return &mutationResolver{r}
-}
-func (r *Resolver) Query() QueryResolver {
-    return &queryResolver{r}
+type NewItem struct{
+    Name     string
+    DueDate  string
 }
 
-//Resolver for mutations
-type mutationResolver struct{ *Resolver }
+type NewTodoList struct{
+    Name string
+    Items []NewItem
 
-//Create recipe mutation
-func (r *mutationResolver) CreateItem(ctx context.Context, input *NewItem, ingredients []*NewIngredient) (*models.Item, error) {
-    //Fetch Connection and close db
-    db := models.FetchConnection()
-    defer db.Close()
+}
+// registerQuery registers the root query type.
+func (r *Resolver) registerQuery(schema *schemabuilder.Schema) {
+  obj := schema.Query()
 
-    //Create the recipe using the input structs
-    recipe := models.Item{Name: input.Name, Procedure: *input.Procedure}
-
-    //initialize the ingredients with the length of the input for ingredients
-    recipe.Ingredients = make([]models.Ingredient,len(ingredients))
-    //Loop and add all items
-    for index,item := range ingredients{
-        recipe.Ingredients[index] = models.Ingredient{Name: item.Name}
-    }
-    //Create by passing the pointer to the recipe
-    db.Create(&recipe)
-    return &recipe, nil
+  obj.FieldFunc("getTodoList", func() models.TodoList {
+    return models.TodoList{}
+  })
 }
 
-//Update recipe mutation
-func (r *mutationResolver) UpdateItem(ctx context.Context, id *int, input *NewItem, ingredients []*NewIngredient) (*models.Item, error) {
-    //Fetch Connection and close db
-    db := models.FetchConnection()
-    defer db.Close()
+// registerMutation registers the root mutation type.
+func (r *Resolver) registerMutation(schema *schemabuilder.Schema) {
+  obj := schema.Mutation()
+  obj.FieldFunc("createTodoList", func(todoList struct{
+      Name string
+      Items []*models.Item
+  }) *models.TodoList {
 
-    var recipe models.Item
-    //Find recipe based on ID and update
-    db = db.Preload("Ingredients").Where("id = ?",*id).First(&recipe).Update("name",input.Name)
-    if input.Procedure != nil{
-        db.Update("procedure",*input.Procedure)
-    }
+      fmt.Println("todolist... %+v", todoList)
 
-    //Update Ingredients
-    recipe.Ingredients = make([]models.Ingredient,len(ingredients))
-    for index,item := range ingredients{
-        recipe.Ingredients[index] = models.Ingredient{Name:item.Name}
-    }
-    db.Save(&recipe)
-    return &recipe,nil
+      /*
+    todoListItems := make([]models.Item, len(NewTodoList.Items))
+    for i := range todoList.Items {
+        append(todoListItems, models.Item{Name:i.Name, DueDate: i.DueDate})
+    }*/
+
+    return models.CreateTodoList(r.DB, todoList.Name,todoList.Items...)
+  })
+
+  obj.FieldFunc("addItem", func(args struct{ Message string }) string {
+    return "added"
+  })
 }
 
-//Delete recipe mutation
-func (r *mutationResolver) DeleteItem(ctx context.Context, id *int) ([]*models.Item, error) {
-    //Fetch connection
-    db := models.FetchConnection()
-    defer db.Close()
-    var recipe models.Item
+func (r *Resolver) registerTodoList(schema *schemabuilder.Schema) {
+  object := schema.Object("TodoList", models.TodoList{})
 
-    //Fetch based on ID and delete
-    db.Where("id = ?",*id).First(&recipe).Delete(&recipe)
+  object.FieldFunc("items", func(args struct{ Message string}) []models.Item {
+      first := models.Item{}
+      second := models.Item{}
+      return []models.Item{first, second}
+  })
 
-    //Preload and fetch all recipes
-    var recipes []*models.Item
-    db.Preload("Ingredients").Find(&recipes)
-    return recipes,nil
 }
 
+func (r *Resolver) registerItem(schema *schemabuilder.Schema) {
+  schema.Object("Item", models.Item{})
 
-//Query resolver
-type queryResolver struct{ *Resolver }
-
-//Get all recipes
-func (r *queryResolver) Items(ctx context.Context) ([]*models.Item, error) {
-    //Fetch a connection
-    db := models.FetchConnection()
-    //Defer closing the database
-    defer db.Close()
-    //Create an array of recipes to populate
-
-    db.Preload("Ingredients").Find(&recipes)
-    return recipes,nil
+}
+// schema builds the graphql schema.
+func (r *Resolver) Schema() *graphql.Schema {
+  builder := schemabuilder.NewSchema()
+  r.registerQuery(builder)
+  r.registerMutation(builder)
+  r.registerTodoList(builder)
+  r.registerItem(builder)
+  return builder.MustBuild()
 }

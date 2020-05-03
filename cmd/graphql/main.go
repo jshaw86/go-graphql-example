@@ -9,31 +9,20 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/jshaw86/go-graphql-example/graph"
 	"github.com/jshaw86/go-graphql-example/graph/generated"
+    "github.com/heptiolabs/healthcheck"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
+    "github.com/jshaw86/go-graphql-example/models"
 )
 
 const defaultPort = "8080"
 
 var db *gorm.DB;
 
-func initDB() {
-    var err error
-    dataSourceName := "root:@tcp(localhost:3306)/?parseTime=True"
-    db, err = gorm.Open("mysql", dataSourceName)
-
-    if err != nil {
-        fmt.Println(err)
-        panic("failed to connect database")
+func getEnv(key, fallback string) string {
+    if value, ok := os.LookupEnv(key); ok {
+        return value
     }
-
-    db.LogMode(true)
-
-    // Create the database. This is a one-time step.
-    // Comment out if running multiple times - You may see an error otherwise
-    db.Exec("CREATE DATABASE test_db")
-    db.Exec("USE test_db")
-
-    // Migration to create tables for Order and Item schema
-    db.AutoMigrate(&models.List{}, &models.Item{})
+    return fallback
 }
 
 func main() {
@@ -42,9 +31,19 @@ func main() {
 		port = defaultPort
 	}
 
-    initDB()
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+    databaseConfig := models.Config{
+        DatabaseType: getEnv("DATABASE_TYPE", "mysql"),
+        Hostname: getEnv("HOSTNAME","localhost"),
+        Username: getEnv("USERNAME","root"),
+        Password: getEnv("PASSWORD",""),
+        Database: getEnv("DATABASE","test_db"),
 
+    }
+
+    db := models.InitDB(&databaseConfig)
+    srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{DB: db}}))
+
+    http.Handle("/", healthcheck.NewHandler());
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
