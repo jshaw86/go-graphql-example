@@ -1,4 +1,4 @@
-package models
+package database
 
 import(
     "fmt"
@@ -6,28 +6,6 @@ import(
     "github.com/go-sql-driver/mysql"
     "github.com/vividcortex/mysqlerr"
 )
-
-type Config struct {
-    DatabaseType string
-    Hostname string
-    Username string
-    Password string
-    Database string
-
-}
-
-type TodoList struct {
-    ID       int    `json:"id" gorm:"primary_key"`
-    Name     string `json:"name"`
-    Items []*Item `gorm:"foreignkey:TodoListId"`
-}
-
-type Item struct {
-    ID       int    `json:"id" gorm:"primary_key"`
-    TodoListId int `json:"todo_list_id"`
-    Name     string `json:"name"`
-    DueDate  string    `json:"due_date"`
-}
 
 func InitDB(c *Config) *gorm.DB{
     db, err := FetchConnection(c)
@@ -54,18 +32,5 @@ func InitDB(c *Config) *gorm.DB{
 func FetchConnection(c *Config) (*gorm.DB, error){
     connstr := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?parseTime=True", c.Username,c.Password,c.Hostname, c.Database)
 	return gorm.Open("mysql",connstr)
-
-}
-
-func CreateTodoList(db *gorm.DB, name string, items ...*Item) *TodoList {
-    todoList := TodoList{Name: name, Items: items}
-
-    db.NewRecord(todoList) // => returns `true` as primary key is blank
-
-    db.Create(&todoList)
-
-    db.NewRecord(todoList)
-
-    return &todoList
 
 }

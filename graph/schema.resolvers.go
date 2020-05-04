@@ -6,13 +6,13 @@ package graph
 import (
 	"context"
 	"fmt"
-
+	"github.com/jshaw86/go-graphql-example/database"
 	"github.com/jshaw86/go-graphql-example/graph/generated"
 	"github.com/jshaw86/go-graphql-example/graph/model"
 )
 
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.TodoList, error) {
-	panic(fmt.Errorf("not implemented"))
+    return database.CreateTodoList(r.DB, *input.Name, input.Items...)
 }
 
 func (r *mutationResolver) AddItem(ctx context.Context, input model.NewItem) (*model.Item, error) {
@@ -20,11 +20,14 @@ func (r *mutationResolver) AddItem(ctx context.Context, input model.NewItem) (*m
 }
 
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.TodoList, error) {
-	panic(fmt.Errorf("not implemented"))
+    var todoLists []*model.TodoList
+    db.Find(&todoLists)
 }
 
 func (r *queryResolver) Todo(ctx context.Context, id string) (*model.TodoList, error) {
-	panic(fmt.Errorf("not implemented"))
+    var todoList models.TodoList
+    db.Where("id = ?", id).First(&todoList)
+    return todoList
 }
 
 // Mutation returns generated.MutationResolver implementation.

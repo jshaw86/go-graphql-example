@@ -18,9 +18,10 @@ type Query {
 }
 
 input NewTodo {
-  name: String
+  name: String!
   text: String!
   done: Boolean!
+  items: []Item
 }
 
 input NewItem {

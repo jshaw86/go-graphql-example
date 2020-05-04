@@ -10,7 +10,7 @@ import (
 	"github.com/jshaw86/go-graphql-example/graph"
 	"github.com/jshaw86/go-graphql-example/graph/generated"
     "github.com/heptiolabs/healthcheck"
-    "github.com/jshaw86/go-graphql-example/models"
+    "github.com/jshaw86/go-graphql-example/database"
 )
 
 const defaultPort = "8080"
@@ -28,7 +28,7 @@ func main() {
 		port = defaultPort
 	}
 
-    databaseConfig := models.Config{
+    databaseConfig := database.Config{
         DatabaseType: getEnv("DATABASE_TYPE", "mysql"),
         Hostname: getEnv("HOSTNAME","localhost"),
         Username: getEnv("USERNAME","root"),
@@ -37,7 +37,7 @@ func main() {
 
     }
 
-    db := models.InitDB(&databaseConfig)
+    db := database.InitDB(&databaseConfig)
     srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{DB: db}}))
 
     http.Handle("/", healthcheck.NewHandler());
