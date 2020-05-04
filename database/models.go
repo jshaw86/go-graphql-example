@@ -26,8 +26,8 @@ type Item struct {
     DueDate  string    `json:"due_date"`
 }
 
-func CreateTodoList(db *gorm.DB, name string, items ...*Item) *TodoList {
-    todoList := TodoList{Name: name, Items: items}
+func CreateTodoList(db *gorm.DB, name string) *TodoList {
+    todoList := TodoList{Name: name}
 
     db.NewRecord(todoList)
 

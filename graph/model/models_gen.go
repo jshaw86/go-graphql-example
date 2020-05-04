@@ -15,9 +15,9 @@ type NewItem struct {
 }
 
 type NewTodo struct {
-	Name *string `json:"name"`
-	Text string  `json:"text"`
-	Done bool    `json:"done"`
+	Name string `json:"name"`
+	Text string `json:"text"`
+	Done bool   `json:"done"`
 }
 
 type TodoList struct {

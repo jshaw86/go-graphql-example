@@ -21,7 +21,6 @@ input NewTodo {
   name: String!
   text: String!
   done: Boolean!
-  items: []Item
 }
 
 input NewItem {

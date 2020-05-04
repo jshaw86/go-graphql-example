@@ -6,13 +6,14 @@ package graph
 import (
 	"context"
 	"fmt"
+
 	"github.com/jshaw86/go-graphql-example/database"
 	"github.com/jshaw86/go-graphql-example/graph/generated"
 	"github.com/jshaw86/go-graphql-example/graph/model"
 )
 
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.TodoList, error) {
-    return database.CreateTodoList(r.DB, *input.Name, input.Items...)
+	return database.CreateTodoList(r.DB, input.Name), nil
 }
 
 func (r *mutationResolver) AddItem(ctx context.Context, input model.NewItem) (*model.Item, error) {
@@ -20,14 +21,15 @@ func (r *mutationResolver) AddItem(ctx context.Context, input model.NewItem) (*m
 }
 
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.TodoList, error) {
-    var todoLists []*model.TodoList
-    db.Find(&todoLists)
+	var todoLists []*database.TodoList
+	r.DB.Find(&todoLists)
+    return todoLists, nil
 }
 
 func (r *queryResolver) Todo(ctx context.Context, id string) (*model.TodoList, error) {
-    var todoList models.TodoList
-    db.Where("id = ?", id).First(&todoList)
-    return todoList
+	var todoList database.TodoList
+	r.DB.Where("id = ?", id).First(&todoList)
+    return todoList, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

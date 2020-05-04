@@ -275,7 +275,7 @@ type Query {
 }
 
 input NewTodo {
-  name: String
+  name: String!
   text: String!
   done: Boolean!
 }
@@ -1975,7 +1975,7 @@ func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj inter
 		switch k {
 		case "name":
 			var err error
-			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
