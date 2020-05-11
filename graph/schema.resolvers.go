@@ -5,31 +5,37 @@ package graph
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/jshaw86/go-graphql-example/database"
 	"github.com/jshaw86/go-graphql-example/graph/generated"
 	"github.com/jshaw86/go-graphql-example/graph/model"
+	"github.com/jshaw86/go-graphql-example/transformations"
 )
 
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.TodoList, error) {
-	return database.CreateTodoList(r.DB, input.Name), nil
+	return transformations.ToGraphQLTodoList(database.CreateTodoList(r.DB, input.Name))
 }
 
 func (r *mutationResolver) AddItem(ctx context.Context, input model.NewItem) (*model.Item, error) {
-	panic(fmt.Errorf("not implemented"))
+    return transformations.ToGraphQLItem(database.CreateItem(r.DB, 5, input.Name, input.DueDate))
 }
 
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.TodoList, error) {
 	var todoLists []*database.TodoList
 	r.DB.Find(&todoLists)
-    return todoLists, nil
+
+    var graphQLTodoLists []*model.TodoList
+    for _, todoList := range todoLists {
+        graphQLTodoList, _ := transformations.ToGraphQLTodoList(todoList)
+        graphQLTodoLists = append(graphQLTodoLists, graphQLTodoList)
+
+    }
+    return graphQLTodoLists, nil
 }
 
 func (r *queryResolver) Todo(ctx context.Context, id string) (*model.TodoList, error) {
 	var todoList database.TodoList
 	r.DB.Where("id = ?", id).First(&todoList)
-    return todoList, nil
+    return transformations.ToGraphQLTodoList(&todoList)
 }
 
 // Mutation returns generated.MutationResolver implementation.
