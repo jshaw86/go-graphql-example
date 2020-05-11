@@ -9,9 +9,9 @@ type Item struct {
 }
 
 type NewItem struct {
-	TodoID  string `json:"todoId"`
-	Name    string `json:"name"`
-	DueDate string `json:"dueDate"`
+	TodoListID int    `json:"todoListId"`
+	Name       string `json:"name"`
+	DueDate    string `json:"dueDate"`
 }
 
 type NewTodo struct {

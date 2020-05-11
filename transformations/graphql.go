@@ -12,6 +12,16 @@ func ToGraphQLTodoList(todoList *database.TodoList) (*model.TodoList, error) {
 
 }
 
+func ToGraphQLTodoLists(todoLists []*database.TodoList) ([]*model.TodoList, error) {
+	var graphQLTodoLists []*model.TodoList
+	for _, todoList := range todoLists {
+		graphQLTodoList, _ := ToGraphQLTodoList(todoList)
+		graphQLTodoLists = append(graphQLTodoLists, graphQLTodoList)
+
+	}
+	return graphQLTodoLists, nil
+}
+
 func ToGraphQLItem(item *database.Item) (*model.Item, error) {
     itemModel := model.Item{}
 

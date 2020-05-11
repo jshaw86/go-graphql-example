@@ -24,7 +24,7 @@ input NewTodo {
 }
 
 input NewItem {
-  todoId: String!
+  todoListId: Int!
   name: String!
   dueDate: String!
 }

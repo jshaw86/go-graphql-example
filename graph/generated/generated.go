@@ -281,7 +281,7 @@ input NewTodo {
 }
 
 input NewItem {
-  todoId: String!
+  todoListId: Int!
   name: String!
   dueDate: String!
 }
@@ -1943,9 +1943,9 @@ func (ec *executionContext) unmarshalInputNewItem(ctx context.Context, obj inter
 
 	for k, v := range asMap {
 		switch k {
-		case "todoId":
+		case "todoListId":
 			var err error
-			it.TodoID, err = ec.unmarshalNString2string(ctx, v)
+			it.TodoListID, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2442,6 +2442,20 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface
 
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
