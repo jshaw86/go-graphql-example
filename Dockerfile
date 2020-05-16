@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . /app
 RUN ls -la
 RUN apk add make
-RUN make build-graphql
+RUN make build
 
 FROM alpine:3.11.3
 WORKDIR /app

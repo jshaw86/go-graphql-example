@@ -1,4 +1,5 @@
 build:
+	go generate ./...
 	go build -o graphql cmd/graphql/main.go
 
 run:
