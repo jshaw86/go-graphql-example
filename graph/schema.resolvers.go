@@ -26,7 +26,8 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, todo model.NewTodo, i
 func (r *mutationResolver) AddItems(ctx context.Context, todoListID int, items []*model.NewItem) ([]*model.Item, error) {
 	var itemsToReturn []*model.Item
 	for _, item := range items {
-		itemToReturn, dbItemErr := transformations.ToGraphQLItem(database.CreateItem(r.DB, todoListID, item.Name, item.DueDate))
+        databaseItem := database.CreateItem(r.DB, todoListID, item.Name, item.DueDate)
+		itemToReturn, dbItemErr := transformations.ToGraphQLItem(databaseItem)
 		if dbItemErr != nil {
 			return nil, dbItemErr
 		}
@@ -36,24 +37,13 @@ func (r *mutationResolver) AddItems(ctx context.Context, todoListID int, items [
 }
 
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.TodoList, error) {
-	var todoLists []*database.TodoList
-	var todoListsItems []*database.Item
-	r.DB.Find(&todoLists)
-	var todoListIds []int
-	for _, todoList := range todoLists {
-		todoListIds = append(todoListIds, todoList.ID)
-	}
-	r.DB.Where("todo_list_id IN (?)", todoListIds).Find(&todoListsItems)
-
+	todoLists, todoListsItems := database.GetTodoListsAndItems(r.DB)
 	return transformations.ToGraphQLTodoLists(todoLists, todoListsItems)
 }
 
 func (r *queryResolver) Todo(ctx context.Context, id int) (*model.TodoList, error) {
-	var todoList database.TodoList
-	var todoListItems []*database.Item
-	r.DB.Where("id = ?", id).First(&todoList)
-	r.DB.Where("todo_list_id = ?", id).Find(&todoListItems)
-	return transformations.ToGraphQLTodoList(&todoList, todoListItems)
+	todoList, todoListItems := database.GetTodoListAndItems(r.DB, id)
+	return transformations.ToGraphQLTodoList(todoList, todoListItems)
 }
 
 // Mutation returns generated.MutationResolver implementation.

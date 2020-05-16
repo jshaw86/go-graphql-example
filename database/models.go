@@ -1,9 +1,5 @@
 package database
 
-import(
-    "github.com/jinzhu/gorm"
-)
-
 type Config struct {
     DatabaseType string
     Hostname string
@@ -26,24 +22,4 @@ type Item struct {
     DueDate  string    `json:"due_date"`
 }
 
-func CreateTodoList(db *gorm.DB, name string) *TodoList {
-    todoList := TodoList{Name: name}
 
-    db.NewRecord(todoList)
-
-    db.Create(&todoList)
-
-    return &todoList
-
-}
-
-func CreateItem(db *gorm.DB, todoListId int, name string, dueDate string) *Item {
-    item := Item{TodoListId: todoListId, Name: name, DueDate: dueDate}
-
-    db.NewRecord(item)
-
-    db.Create(&item)
-
-    return &item
-
-}
