@@ -1,38 +1,38 @@
 package transformations
 
 import (
-    "strconv"
-	"github.com/jshaw86/go-graphql-example/graph/model"
+	"strconv"
+
 	"github.com/jshaw86/go-graphql-example/database"
+	"github.com/jshaw86/go-graphql-example/graph/model"
 )
 
 func ToGraphQLTodoList(todoList *database.TodoList, items []*database.Item) (*model.TodoList, error) {
-    todoListItems, _ := ToGraphQLItems(items)
-    todoListModel := model.TodoList{
-        Name: &todoList.Name,
-        Items: todoListItems,
+	todoListItems, _ := ToGraphQLItems(items)
+	todoListModel := model.TodoList{
+		Name:  &todoList.Name,
+		Items: todoListItems,
+	}
 
-    }
-
-    return &todoListModel, nil
+	return &todoListModel, nil
 
 }
 
 func ToGraphQLTodoLists(todoLists []*database.TodoList, items []*database.Item) ([]*model.TodoList, error) {
 	var graphQLTodoLists []*model.TodoList
-    itemsByTodoListId := make(map[int][]*database.Item)
+	itemsByTodoListId := make(map[int][]*database.Item)
 
-    for _, item := range items {
-        if _, ok := itemsByTodoListId[item.TodoListId]; !ok {
-            itemsByTodoListId[item.TodoListId] = make([]*database.Item, 0)
-        }
+	for _, item := range items {
+		if _, ok := itemsByTodoListId[item.TodoListId]; !ok {
+			itemsByTodoListId[item.TodoListId] = make([]*database.Item, 0)
+		}
 
-        itemsByTodoListId[item.TodoListId] = append(itemsByTodoListId[item.TodoListId], item)
+		itemsByTodoListId[item.TodoListId] = append(itemsByTodoListId[item.TodoListId], item)
 
-    }
+	}
 
 	for _, todoList := range todoLists {
-        todoListItems :=  itemsByTodoListId[todoList.ID]
+		todoListItems := itemsByTodoListId[todoList.ID]
 		graphQLTodoList, _ := ToGraphQLTodoList(todoList, todoListItems)
 		graphQLTodoLists = append(graphQLTodoLists, graphQLTodoList)
 
@@ -41,24 +41,24 @@ func ToGraphQLTodoLists(todoLists []*database.TodoList, items []*database.Item) 
 }
 
 func ToGraphQLItems(items []*database.Item) ([]*model.Item, error) {
-    var graphQLItems []*model.Item
+	var graphQLItems []*model.Item
 
-    for _, item := range items {
-        graphQLItem, _ := ToGraphQLItem(item)
-        graphQLItems = append(graphQLItems, graphQLItem)
+	for _, item := range items {
+		graphQLItem, _ := ToGraphQLItem(item)
+		graphQLItems = append(graphQLItems, graphQLItem)
 
-    }
+	}
 
-    return graphQLItems, nil
+	return graphQLItems, nil
 }
 
 func ToGraphQLItem(item *database.Item) (*model.Item, error) {
-    itemModel := model.Item{
-        ID: strconv.Itoa(item.ID),
-        TodoListID: strconv.Itoa(item.TodoListId),
-        Name: item.Name,
-        DueDate: item.DueDate,
-    }
+	itemModel := model.Item{
+		ID:         strconv.Itoa(item.ID),
+		TodoListID: strconv.Itoa(item.TodoListId),
+		Name:       item.Name,
+		DueDate:    item.DueDate,
+	}
 
-    return &itemModel, nil
+	return &itemModel, nil
 }

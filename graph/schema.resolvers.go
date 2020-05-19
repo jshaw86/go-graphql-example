@@ -26,7 +26,7 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, todo model.NewTodo, i
 func (r *mutationResolver) AddItems(ctx context.Context, todoListID int, items []*model.NewItem) ([]*model.Item, error) {
 	var itemsToReturn []*model.Item
 	for _, item := range items {
-        databaseItem := database.CreateItem(r.DB, todoListID, item.Name, item.DueDate)
+		databaseItem := database.CreateItem(r.DB, todoListID, item.Name, item.DueDate)
 		itemToReturn, dbItemErr := transformations.ToGraphQLItem(databaseItem)
 		if dbItemErr != nil {
 			return nil, dbItemErr

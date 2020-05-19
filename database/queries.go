@@ -1,7 +1,7 @@
 package database
 
-import(
-    "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
 )
 
 func GetTodoListsAndItems(db *gorm.DB) ([]*TodoList, []*Item) {
@@ -14,7 +14,7 @@ func GetTodoListsAndItems(db *gorm.DB) ([]*TodoList, []*Item) {
 	}
 	db.Where("todo_list_id IN (?)", todoListIds).Find(&todoListsItems)
 
-    return todoLists, todoListsItems
+	return todoLists, todoListsItems
 }
 
 func GetTodoListAndItems(db *gorm.DB, id int) (*TodoList, []*Item) {
@@ -23,27 +23,27 @@ func GetTodoListAndItems(db *gorm.DB, id int) (*TodoList, []*Item) {
 	db.Where("id = ?", id).First(&todoList)
 	db.Where("todo_list_id = ?", id).Find(&todoListItems)
 
-    return &todoList, todoListItems
+	return &todoList, todoListItems
 }
 
 func CreateTodoList(db *gorm.DB, name string) *TodoList {
-    todoList := TodoList{Name: name}
+	todoList := TodoList{Name: name}
 
-    db.NewRecord(todoList)
+	db.NewRecord(todoList)
 
-    db.Create(&todoList)
+	db.Create(&todoList)
 
-    return &todoList
+	return &todoList
 
 }
 
 func CreateItem(db *gorm.DB, todoListId int, name string, dueDate string) *Item {
-    item := Item{TodoListId: todoListId, Name: name, DueDate: dueDate}
+	item := Item{TodoListId: todoListId, Name: name, DueDate: dueDate}
 
-    db.NewRecord(item)
+	db.NewRecord(item)
 
-    db.Create(&item)
+	db.Create(&item)
 
-    return &item
+	return &item
 
 }
